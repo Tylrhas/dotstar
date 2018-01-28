@@ -12,3 +12,13 @@ button.btn.file {
     font-size: 130%;
     padding: 7px 50px;
 }
+.files h3 {
+    text-align: center;
+}
+.btn:disabled{
+    border-color: slategrey;
+    color: slategray;
+}
+#selected-file{
+    background-color: pink;
+}
