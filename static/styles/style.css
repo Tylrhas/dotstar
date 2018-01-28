@@ -1,0 +1,14 @@
+body {
+    padding-top: 5rem;
+}
+.files{
+    background-color: #e9ecef;
+    padding: 10px;
+}
+.row {
+    margin:0px;
+}
+button.btn.file {
+    font-size: 130%;
+    padding: 7px 50px;
+}
