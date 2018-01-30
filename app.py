@@ -2,7 +2,7 @@
 # pylint: disable=missing-docstring
 import os
 from flask import Flask, render_template, request
-# import RPi.GPIO as GPIO, Image, time
+import RPi.GPIO as GPIO, Image, time
 app = Flask(__name__)
 app.debug = True
 paint = True
@@ -76,14 +76,10 @@ def start():
     print "Displaying..."
     while True:
         for x in range(width):
-                    spidev.write(column[x])
-                    spidev.flush()
-                    if paint == False :
-                        #exit function because the stop button was clicked
-                        return
+            spidev.write(column[x])
+            spidev.flush()
             time.sleep(0.001)
         time.sleep(0.5)
-
 
 if __name__ == '__main__':
     app.run()
