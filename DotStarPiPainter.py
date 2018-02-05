@@ -83,20 +83,20 @@ strip.begin() # Initialize SPI pins for output
 ledBuf     = strip.getPixels() # Pointer to 'raw' LED strip data
 clearBuf   = bytearray([0xFF, 0, 0, 0] * num_leds)
 # imgNum     = 0    # Index of currently-active image
-duration   = 2.0  # Image paint time, in seconds 
+duration   = 20.0  # Image paint time, in seconds 
 # filename   = None # List of image files (nothing loaded yet)
 lightpaint = None # LightPaint object for currently-active image (none yet)
 paint = True
 
 # FUNCTIONS ----------------------------------------------------------------
 
-# def getFiles():
-#     path = "images"
-#     images = []
-#     for image in os.listdir(path):
-#         if os.path.isfile(os.path.join(path, image)):
-#             images.append(image)
-#     return images
+def getFiles():
+    path = "images"
+    images = []
+    for image in os.listdir(path):
+        if os.path.isfile(os.path.join(path, image)):
+            images.append(image)
+    return images
 
 @app.route("/")
 def index():
@@ -139,6 +139,15 @@ def index():
 # 	if len(filename) > 0:                  # Found some image files?
 # 		filename.sort()                # Sort list alphabetically
 # 		lightpaint = loadImage(imgNum) # Load first image
+@app.route("/stop", methods=['POST'])
+def stopPaint():
+	# stop the painting
+	print "Cleaning up"
+	strip.clear()
+	strip.show()
+	print "Stopped!"
+	return "stopped"
+
 
 @app.route("/start", methods=['POST'])
 def loadImage():
@@ -228,14 +237,6 @@ def loadImage():
 				lightpaint.dither(ledBuf,
 					elapsed / duration)
 				strip.show(ledBuf)
-				if paint != True:
-					# stop the painting
-					print "Cleaning up"
-					GPIO.cleanup()
-					strip.clear()
-					strip.show()
-					print "Stopped!"
-					return
 			print "Cleaning up"
 			GPIO.cleanup()
 			strip.clear()
