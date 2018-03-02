@@ -45,13 +45,14 @@ from evdev import InputDevice, ecodes
 from lightpaint import LightPaint
 from PIL import Image
 from flask import Flask, render_template, request
+# import asyncio
 app = Flask(__name__)
 
 # CONFIGURABLE STUFF -------------------------------------------------------
 
 num_leds   = 144    # Length of LED strip, in pixels
 order      = 'bgr'  # 'brg' for current DotStars, 'gbr' for pre-2015 strips
-vflip      = 'true' # 'true' if strip input at bottom, else 'false'
+vflip      = 'false' # 'true' if strip input at bottom, else 'false'
 app.debug = True
 
 # DotStar strip data & clock MUST connect to hardware SPI pins
@@ -83,12 +84,23 @@ strip.begin() # Initialize SPI pins for output
 ledBuf     = strip.getPixels() # Pointer to 'raw' LED strip data
 clearBuf   = bytearray([0xFF, 0, 0, 0] * num_leds)
 # imgNum     = 0    # Index of currently-active image
-duration   = 20.0  # Image paint time, in seconds 
 # filename   = None # List of image files (nothing loaded yet)
 lightpaint = None # LightPaint object for currently-active image (none yet)
-paint = True
+
+HOST = '0.0.0.0'
+PORT = 5000
 
 # FUNCTIONS ----------------------------------------------------------------
+# @app.after_request
+# def paintImages(response):
+# 	# global response
+# 	print response
+# 	print "done painting"
+# def paint():
+# 	global lightpaint
+	
+# 	lightpaint = None # set this back to none since the painting is done
+# 	return 
 
 def getFiles():
     path = "images"
@@ -141,6 +153,7 @@ def index():
 # 		lightpaint = loadImage(imgNum) # Load first image
 @app.route("/stop", methods=['POST'])
 def stopPaint():
+	lightpaint = None # set this back to none since the painting is stopped
 	# stop the painting
 	print "Cleaning up"
 	strip.clear()
@@ -151,8 +164,10 @@ def stopPaint():
 
 @app.route("/start", methods=['POST'])
 def loadImage():
-	global paint
-	paint = True
+	global lightpaint
+	global duration
+	duration   = int(request.get_json()['duration'])  # Image paint time, in seconds 
+	lightpaint = None # set this back to none incase some weirdness happened
 	# Load image, do some conversion and processing as needed before painting.
 	strip.setPixelColor(0, 0x010000) # Red = loading
 	strip.show()
@@ -185,7 +200,6 @@ def loadImage():
 	startTime  = time.time()
 
 	# Init some stuff for speed selection...
-	global duration
 	max_time    = 10.0
 	min_time    =  0.1
 	time_range  = (max_time - min_time)
@@ -214,13 +228,7 @@ def loadImage():
 
 	strip.clear()
 	strip.show()
-
 	# MAIN LOOP ----------------------------------------------------------------
-
-	# scandir() # USB drive might already be inserted
-	# signal.signal(signal.SIGUSR1, sigusr1_handler) # USB mount signal
-	# signal.signal(signal.SIGUSR2, sigusr2_handler) # USB unmount signal
-
 
 	if lightpaint != None:
 		# Paint!
@@ -242,9 +250,6 @@ def loadImage():
 			strip.clear()
 			strip.show()
 			print "Done!"
-			return
-
-
 
 # except KeyboardInterrupt:
 # 	print "Cleaning up"
@@ -255,4 +260,4 @@ def loadImage():
 
 # Start the Flask App
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+	app.run(host=HOST, port=PORT, threaded=True)

@@ -24,7 +24,7 @@ $('#start').click(function () {
     $.ajax({
         url: "start",
         type: "POST",
-        data: JSON.stringify({ "filename": $('#selected-file').text() }),
+        data: JSON.stringify({ "filename": $('#selected-file').text(), "duration": $('#duration').val() }),
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function () {
